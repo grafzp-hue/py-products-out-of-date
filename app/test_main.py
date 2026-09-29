@@ -1,6 +1,8 @@
 import datetime
+from typing import Any
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 
 from app import main
 
@@ -32,18 +34,36 @@ from app import main
         (
             datetime.date(2022, 2, 2),
             [
-                {"name": "yesterday", "expiration_date": datetime.date(2022, 2, 1)},
-                {"name": "today", "expiration_date": datetime.date(2022, 2, 2)},
-                {"name": "tomorrow", "expiration_date": datetime.date(2022, 2, 3)},
+                {
+                    "name": "yesterday",
+                    "expiration_date": datetime.date(2022, 2, 1),
+                },
+                {
+                    "name": "today",
+                    "expiration_date": datetime.date(2022, 2, 2),
+                },
+                {
+                    "name": "tomorrow",
+                    "expiration_date": datetime.date(2022, 2, 3),
+                },
             ],
             ["yesterday"],
         ),
         (
             datetime.date(2024, 1, 1),
             [
-                {"name": "first", "expiration_date": datetime.date(2023, 12, 31)},
-                {"name": "second", "expiration_date": datetime.date(2023, 12, 30)},
-                {"name": "fresh", "expiration_date": datetime.date(2024, 1, 1)},
+                {
+                    "name": "first",
+                    "expiration_date": datetime.date(2023, 12, 31),
+                },
+                {
+                    "name": "second",
+                    "expiration_date": datetime.date(2023, 12, 30),
+                },
+                {
+                    "name": "fresh",
+                    "expiration_date": datetime.date(2024, 1, 1),
+                },
             ],
             ["first", "second"],
         ),
@@ -55,10 +75,15 @@ from app import main
         ),
     ],
 )
-def test_outdated_products(monkeypatch, today, products, expected):
+def test_outdated_products(
+    monkeypatch: MonkeyPatch,
+    today: datetime.date,
+    products: list[dict[str, Any]],
+    expected: list[str],
+) -> None:
     class FrozenDate(datetime.date):
         @classmethod
-        def today(cls):
+        def today(cls) -> datetime.date:
             return today
 
     monkeypatch.setattr(main.datetime, "date", FrozenDate)
